@@ -1,0 +1,20 @@
+# 证书与私钥绝不能进仓库
+certs/
+*.crt
+*.key
+*.pem
+
+# 本地环境与测试数据
+.env
+data/
+.localtest/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 上传临时文件
+*.part
+
+# 离线镜像包（体积大，不提交）
+deploy/nasui-image.tar

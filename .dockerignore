@@ -1,0 +1,12 @@
+.git
+.gitignore
+.gitattributes
+*.md
+deploy
+certs
+data
+.env
+.localtest
+__pycache__
+*.pyc
+*.part

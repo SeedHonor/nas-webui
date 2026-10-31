@@ -1,0 +1,45 @@
+# NAS 文件管理 WebUI · Docker Compose 部署
+#
+# 使用：
+#   1) 把本项目整个目录拷到主机
+#   2) cp .env.example .env  然后填 NAS_PASSWORD、NAS_HOST_DIR
+#   3) docker compose up -d --build
+#
+# 一键部署（自动建目录、重试镜像源、配防火墙）请用 deploy/install-nas.sh。
+# 下面所有 ${...} 都可以写进 .env 或用命令行环境变量覆盖。
+
+services:
+  nasui:
+    build:
+      context: .
+      args:
+        # 拉不到 Docker Hub 时改成国内加速地址，例如：
+        # docker.m.daocloud.io/library/python:3.12-alpine
+        BASE_IMAGE: ${BASE_IMAGE:-python:3.12-alpine}
+    image: nasui:latest
+    container_name: nasui
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${NAS_PORT:-8100}:8100"        # HTTP（局域网）
+      - "${NAS_TLS_PORT:-8453}:8453"    # HTTPS（Cloudflare Full (strict) 回源）
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      NAS_ROOT: /data
+      # 必填：改成一个只有你知道的密码（换密码后重启容器即可）
+      NAS_PASSWORD: ${NAS_PASSWORD:?请先在 .env 里设置 NAS_PASSWORD}
+      # 0 = 不限单文件大小（磁盘剩余空间仍需足够）
+      NAS_MAX_UPLOAD_MB: ${NAS_MAX_UPLOAD_MB:-0}
+      # 只影响启动日志里显示的地址，可以不填
+      NAS_PUBLIC_HOST: ${NAS_PUBLIC_HOST:-}
+    volumes:
+      # 真正被管理的目录（只暴露这个子目录，不暴露整块盘）
+      - "${NAS_HOST_DIR:-./data}:/data"
+      # TLS 证书（只读）；不需要外网访问时删掉这行，就只提供 HTTP
+      - "${NAS_CERT_DIR:-./certs}:/app/certs:ro"
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
