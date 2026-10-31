@@ -112,15 +112,17 @@ chmod 777 "$DATA_DIR"
 say "[2/7] 管理目录就绪：$DATA_DIR"
 
 # ----------------------------------------------------------------- 3. 证书
+# ----------------------------------------------------------------- 3. 证书（可选）
+# 有 origin.crt + origin.key 就启用 HTTPS；没有就只开 HTTP，功能一样
 CERT_SRC=""
-for candidate in "$PROJECT_DIR/certs" "$SHARE_DIR/miniblog/certs" "/opt/miniblog/certs"; do
+for candidate in "$PROJECT_DIR/certs" "$SHARE_DIR/certs" "$SHARE_DIR/nasui/certs" "/opt/nasui/certs"; do
     if [ -f "$candidate/origin.crt" ] && [ -f "$candidate/origin.key" ]; then
         CERT_SRC="$candidate"
         break
     fi
 done
 if [ -z "$CERT_SRC" ]; then
-    for candidate in /mnt/*/miniblog/certs; do
+    for candidate in /mnt/*/certs /mnt/*/nasui/certs; do
         if [ -f "$candidate/origin.crt" ] && [ -f "$candidate/origin.key" ]; then
             CERT_SRC="$candidate"
             break
